@@ -15,9 +15,15 @@ def test_inter_cpp():
     output_pp_file = 'inter.pp'
     preprocessor.preprocessor(input_file, output_pp_file)
 
+def test_main_cpp():
+    input_file = file_folder + 'main.cpp'
+    output_pp_file = 'main.pp'
+    preprocessor.preprocessor(input_file, output_pp_file)
+
 
 
 
 if __name__ == '__main__':
-    test_inter_cpp()
-    test_factorial_cpp()
+    # test_inter_cpp()
+    # test_factorial_cpp()
+    test_main_cpp()

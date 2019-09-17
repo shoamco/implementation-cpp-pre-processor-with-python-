@@ -194,6 +194,7 @@ def write_to_pp_file(output_file: str, list_lines: list, dict_macro: dict) -> No
             elif is_line_contain_define_macro(line):
                 add_macro_to_dict(line, dict_macro)
             else:
+                print(f"line {line}")
                 line = handle_macro(line, dict_macro)
                 f.write(line)
 
@@ -230,7 +231,9 @@ def read_cpp_file(input_file: str) -> (
             elif is_line_contain_define_macro(line):
                 add_macro_to_dict(line, dict_macro)
             else:
+                # print(f"line {line}")
                 output_lines.append(line)
+
 
     return output_lines, dict_macro
 
