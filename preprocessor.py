@@ -54,24 +54,21 @@ def handle_macro(line: str, dict_macro: dict) -> str:
                 cut_line = line[start_cut:end_cut]
 
 
-                print(f"list_val_function{list_val_function}")
-                print(f"list_val_function_macro{list_val_function_macro}")
+                # print(f"list_val_function{list_val_function}")
+                # print(f"list_val_function_macro{list_val_function_macro}")
 
 
                 line = line.replace(cut_line, dict_macro[word_macro])
-                print(f"----line {line}")
-                print(f"\n\nlist_val_function_macro[0] {list_val_function_macro[0]},list_val_function[1]:{list_val_function[0]} ")
-                print(f"list_val_function_macro[0]{list_val_function_macro[1].split()[0]},list_val_function[1]:{list_val_function[1].split()[0]} ")
-                line = line.replace(list_val_function_macro[0], list_val_function[0])
-                print(f"----line {line}")
-                line = line.replace(list_val_function_macro[1],list_val_function[1].split()[0])
-                print(f"--66666666666--line {line}")
-                len_val=len(list_val_function_macro)
+                # print(f"----line {line}")
+                # print(f"\n\nlist_val_function_macro[0] {list_val_function_macro[0]},list_val_function[1]:{list_val_function[0]} ")
+                # print(f"list_val_function_macro[0]{list_val_function_macro[1].split()[0]},list_val_function[1]:{list_val_function[1].split()[0]} ")
+
+                # len_val=len(list_val_function_macro)
                 for index, val in enumerate(list_val_function_macro):
-                    print(f"index {index}, val  {val}, list_val_function[index]  {list_val_function[index]}")
-                    print(f"befor line : {line}")
+                    # print(f"index {index}, val  {val}, list_val_function[index]  {list_val_function[index]}")
+                    # print(f"befor line : {line}")
                     line = line.replace(val, list_val_function[index])
-                    print(f"after line : {line}")
+                    # print(f"after line : {line}")
 
 
             else:  # if ia a macro variable
@@ -153,14 +150,6 @@ def copy_header_file(header_file: str, dict_macro: dict) -> (list, dict):
 
     return output, dict_macro
 
-
-# def handle_macro_function(line: str, dict_macro: dict) -> str:
-#     """
-#      get line and replace the macro function with the all definition of the macro function
-#     :param line:  line in file that contain define of macro function
-#     :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
-#    :return:the new line after replace the macro function and
-#     """
 
 
 def handle_include_header_file(line: str, output_lines: list, dict_macro: dict, is_standard_library: bool) -> (
@@ -246,7 +235,7 @@ def read_cpp_file(input_file: str) -> (
     return output_lines, dict_macro
 
 
-def preprocessor():
+def preprocessor(input_file,output_pp_file):
     """
     the function is a simulator of preprocessor
     is read a cpp file :replace macro define and include:
@@ -255,7 +244,6 @@ def preprocessor():
     and create a new pp file(with the same name of cpp file) with all the line after preprocessor
     :return:None
     """
-    input_file = file_folder + 'factorial.cpp'
-    output_pp_file = 'factorial.pp'
+
     output_lines, dict_macro = read_cpp_file(input_file)  # read cpp file and return list of the new line
     write_to_pp_file(output_pp_file, output_lines, dict_macro)  # write the new line into pp file

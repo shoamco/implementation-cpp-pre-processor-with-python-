@@ -2,7 +2,7 @@
 int factorial(int n)
 {
     cout << "Ola" << endl;
-    cout <<  MAX(3,5) (3) > (b) ? (3) : (b)
+    cout <<  MAX(3, 5) (3) > (b) ? (3) : (b)
 ) << endl;
 
 	if (n > 1)
