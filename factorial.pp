@@ -1,5 +1,3 @@
-void func_of_iostream();
-void func_of_iostream();
 
 int factorial(int n)
 {

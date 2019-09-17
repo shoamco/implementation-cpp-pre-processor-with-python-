@@ -1,4 +1,5 @@
 include_my_file = 'include "'
+include = 'include'
 include_standard_library = 'include <'
 define_macro = 'define'
 file_folder = "PreprocessorTask/"
@@ -14,7 +15,20 @@ def is_line_contain(line: str, words: str) -> bool:
     """
 
     return line.find(words) != -1
+def handle_macro(line: str, dict_macro: dict) -> str:
+    """
+    get line and replace the macro variable with the value macro
+    :param line:  line in file that contain define
+    :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
+    :return:the new line after replace the macro
+    """
 
+    if not is_line_contain_define_macro(line):
+        word_macro = find_variable_macro(line, dict_macro)
+        if word_macro:
+            line = line.replace(word_macro, dict_macro[word_macro])
+
+    return line
 
 def find_variable_macro(line: str, dict_macro: dict) -> str:
     """
@@ -24,18 +38,13 @@ def find_variable_macro(line: str, dict_macro: dict) -> str:
     :return: the word macro if find else return None
     """
 
-    list_word = line.replace('(', " ").split()
-    print(f"dict_macro {dict_macro}")
-    print(f"list_word {list_word}")
+    list_word = line.replace('(', " ").split()#for
+
     for word in list_word:
 
         if word in dict_macro:
             return word
-    # list_word = line.split('(')
-    # print(f"list_word {list_word}")
-    # for word in list_word:
-    #     if word in dict_macro:
-    #         return word
+
     return None
 
 
@@ -68,8 +77,11 @@ def is_line_contain_sl_header_file(
     return is_line_contain(line, include_standard_library)
 
 
-def handle_include(line: str, output_lines: list, dict_macro: dict, is_standard_library: bool):
-    pass
+def handle_include(line: str, output_lines: list, dict_macro: dict) -> (list, dict):
+    if is_line_contain_my_header_file(line):  # if the line contain include to my file (#include "")
+        return handle_include_header_file(line, output_lines, dict_macro, False)
+    elif is_line_contain_sl_header_file(line):
+        return handle_include_header_file(line, output_lines, dict_macro, True)
 
 
 def copy_header_file(header_file: str, dict_macro: dict) -> (list, dict):
@@ -85,48 +97,23 @@ def copy_header_file(header_file: str, dict_macro: dict) -> (list, dict):
         for line in lines:
             if is_line_contain_my_header_file(line):
                 lines, dict_macro = handle_include_header_file(line, lines, dict_macro, False)  # todo:Recursive
-            # if is_line_contain_sl_header_file(line):
-            #      lines, dict_macro = handle_include_header_file(line, lines, dict_macro, True)
-            elif is_line_contain_define_macro(line):
-                print(f"line {line}")
-                word_list = line.split()
-                print(f"word_list {word_list}")
-                variable_macro = word_list[1]
-                value_macro = word_list[2] if len(word_list) > 2 else ""
-                dict_macro[variable_macro] = value_macro  # insert macro key=macro variable, value=macro value
 
-            elif not is_line_contain(line, "#"):
-                output.append(line)
+            elif is_line_contain_define_macro(line):
+                add_macro_to_dict(line, dict_macro)
 
     return output, dict_macro
 
 
-def handle_macro(line: str, dict_macro: dict) -> str:
-    """
-    :param line:  line in file that contain define
-    :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
-    :return:the new line after replace the macro
-    """
-    print(f"line {line}")
-    if not is_line_contain_define_macro(line):
-       print("yes!!!!!!")
-       word_macro = find_variable_macro(line, dict_macro)
-       print(f"word_macro {word_macro}")
-       if word_macro:
-           print(f"macro line{line}")
-           # if is_line_contain()
-           line = line.replace(word_macro, dict_macro[word_macro])
-           print(f"macro {line}")
-
-    return line
 
 
-def handle_macro_function(line: str, dict_macro: dict) -> str:
-    """
-    :param line:  line in file that contain define of macro function
-    :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
-   :return:the new line after replace the macro function and
-    """
+
+# def handle_macro_function(line: str, dict_macro: dict) -> str:
+#     """
+#      get line and replace the macro function with the all definition of the macro function
+#     :param line:  line in file that contain define of macro function
+#     :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
+#    :return:the new line after replace the macro function and
+#     """
 
 
 def handle_include_header_file(line: str, output_lines: list, dict_macro: dict, is_standard_library: bool) -> (
@@ -166,19 +153,14 @@ def write_to_pp_file(output_file: str, list_lines: list, dict_macro: dict) -> No
 
     with open(output_file, 'w') as f:
         for line in list_lines:
-            if is_line_contain_my_header_file(line):  # if the line contain include to my file (#include "")
-                output_lines, dict_macro = handle_include_header_file(line, output_lines, dict_macro, False)
-
-            elif is_line_contain_sl_header_file(line):
-                output_lines, dict_macro = handle_include_header_file(line, output_lines, dict_macro, True)
-
-
-
+            if is_line_contain(line, include):
+                output_lines, dict_macro = handle_include(line, output_lines, dict_macro)
+            elif is_line_contain_define_macro(line):
+                add_macro_to_dict(line, dict_macro)
             else:
-
                 line = handle_macro(line, dict_macro)
-
                 f.write(line)
+
 
 def add_macro_to_dict(line: str, dict_macro: dict) -> dict:
     if is_line_contain(line, '('):  # if is macro function
@@ -206,18 +188,12 @@ def read_cpp_file(input_file: str) -> (
 
     with open(input_file) as f:
         lines = f.readlines()
-
         for line in lines:
-            if is_line_contain_my_header_file(line):  # if the line contain include to my file (#include "")
-                output_lines, dict_macro = handle_include_header_file(line, output_lines, dict_macro, False)
-            elif is_line_contain_sl_header_file(line):
-                output_lines, dict_macro = handle_include_header_file(line, output_lines, dict_macro, True)
+            if is_line_contain(line, include):
+                output_lines, dict_macro = handle_include(line, output_lines, dict_macro)
             elif is_line_contain_define_macro(line):
-                add_macro_to_dict(line,dict_macro)
-
-
+                add_macro_to_dict(line, dict_macro)
             else:
-
                 output_lines.append(line)
 
     return output_lines, dict_macro
