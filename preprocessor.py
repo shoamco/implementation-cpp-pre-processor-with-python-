@@ -44,7 +44,6 @@ def is_line_contain_define_macro(line: str) -> bool:
         check if the line contain variable macro ('#define' without '('-no macro function)
        :param line:  line of file that we want to check if is contain macro
        :return: True if contain macro ,else False
-
        """
     return is_line_contain(line, define_macro)
     # return is_line_contain(line, define_macro) and not is_line_contain(line, '(')  # macro variable not macro function
@@ -104,7 +103,6 @@ def copy_header_file(header_file: str, dict_macro: dict) -> (list, dict):
 
 def handle_macro(line: str, dict_macro: dict) -> str:
     """
-
     :param line:  line in file that contain define
     :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
     :return:the new line after replace the macro
@@ -125,11 +123,9 @@ def handle_macro(line: str, dict_macro: dict) -> str:
 
 def handle_macro_function(line: str, dict_macro: dict) -> str:
     """
-
     :param line:  line in file that contain define of macro function
     :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
    :return:the new line after replace the macro function and
-
     """
 
 
@@ -184,6 +180,18 @@ def write_to_pp_file(output_file: str, list_lines: list, dict_macro: dict) -> No
 
                 f.write(line)
 
+def add_macro_to_dict(line: str, dict_macro: dict) -> dict:
+    if is_line_contain(line, '('):  # if is macro function
+        line2 = line.replace("#define", "")
+        name_function = line2.split('(')[0].replace(" ", "")
+        dict_macro[name_function] = line2  # insert macro key=macro variable, value=macro value
+    else:
+        word_list = line.split()
+        variable_macro = word_list[1]
+        value_macro = word_list[2] if len(word_list) > 2 else ""
+        dict_macro[variable_macro] = value_macro  # insert macro key=macro variable, value=macro value
+    return dict_macro
+
 
 def read_cpp_file(input_file: str) -> (
         list, dict):  # read cpp file and return a list of all new line after preprocessor
@@ -205,24 +213,7 @@ def read_cpp_file(input_file: str) -> (
             elif is_line_contain_sl_header_file(line):
                 output_lines, dict_macro = handle_include_header_file(line, output_lines, dict_macro, True)
             elif is_line_contain_define_macro(line):
-                print(f"line {line}")
-                if is_line_contain(line, '('):  # if is macro function
-                    line2 = line.replace("#define", "")
-                    print(f"macro function {line}")
-                    name_function = line2.split('(')[0].replace(" ","")
-                    print(f"macro word_list {name_function}")
-                    print(f"after line {line2}")
-
-                    dict_macro[name_function] = line2  # insert macro key=macro variable, value=macro value
-
-                    print(f"line {line}")
-                    print(f"________________________-line2 {line2}")
-                else:
-                    word_list = line.split()
-                    print(f"word_list {word_list}")
-                    variable_macro = word_list[1]
-                    value_macro = word_list[2] if len(word_list) > 2 else ""
-                    dict_macro[variable_macro] = value_macro  # insert macro key=macro variable, value=macro value
+                add_macro_to_dict(line,dict_macro)
 
 
             else:
@@ -238,7 +229,6 @@ def preprocessor():
     is read a cpp file :replace macro define and include:
     is open all the included files and will plant the declarations and macros in the caller source file,
      and will replace all the places in the code which use these macros with the proper literal values of them
-
     and create a new pp file(with the same name of cpp file) with all the line after preprocessor
     :return:None
     """
