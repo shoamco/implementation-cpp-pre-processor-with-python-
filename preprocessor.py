@@ -23,6 +23,7 @@ def find_variable_macro(line: str, dict_macro: dict) -> str:
     :param dict_macro:dict of all variable macro (key-macro variable,value-macro value)
     :return: the word macro if find else return None
     """
+
     list_word = line.replace('(', " ").split()
     print(f"dict_macro {dict_macro}")
     print(f"list_word {list_word}")
@@ -108,14 +109,16 @@ def handle_macro(line: str, dict_macro: dict) -> str:
     :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
     :return:the new line after replace the macro
     """
-
-    word_macro = find_variable_macro(line, dict_macro)
-    print(f"word_macro {word_macro}")
-    if word_macro:
-        print(f"macro line{line}")
-        # if is_line_contain()
-        line = line.replace(word_macro, dict_macro[word_macro])
-        print(f"macro {line}")
+    print(f"line {line}")
+    if not is_line_contain_define_macro(line):
+       print("yes!!!!!!")
+       word_macro = find_variable_macro(line, dict_macro)
+       print(f"word_macro {word_macro}")
+       if word_macro:
+           print(f"macro line{line}")
+           # if is_line_contain()
+           line = line.replace(word_macro, dict_macro[word_macro])
+           print(f"macro {line}")
 
     return line
 
@@ -220,10 +223,7 @@ def read_cpp_file(input_file: str) -> (
                     variable_macro = word_list[1]
                     value_macro = word_list[2] if len(word_list) > 2 else ""
                     dict_macro[variable_macro] = value_macro  # insert macro key=macro variable, value=macro value
-            elif not is_line_contain_define_macro(line):
-                print(line)
-                line = handle_macro(line, dict_macro)
-                output_lines.append(line)
+
 
             else:
 
