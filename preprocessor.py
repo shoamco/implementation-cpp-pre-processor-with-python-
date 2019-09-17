@@ -15,9 +15,23 @@ def is_line_contain(line: str, words: str) -> bool:
     """
 
     return line.find(words) != -1
+
+
+def get_values_of_function(line: str) -> list:
+    """
+    get line and return all value between brackets
+    for example:
+    input: MAX(5,3)
+    output:  [3,5]
+    :param line:
+    :return:
+    """
+    return line.split('(')[-1].split(')')[0].split(',')
+
+
 def handle_macro(line: str, dict_macro: dict) -> str:
     """
-    get line and replace the macro variable with the value macro
+    get line and replace the macro variable\function with the value macro
     :param line:  line in file that contain define
     :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
     :return:the new line after replace the macro
@@ -26,9 +40,45 @@ def handle_macro(line: str, dict_macro: dict) -> str:
     if not is_line_contain_define_macro(line):
         word_macro = find_variable_macro(line, dict_macro)
         if word_macro:
-            line = line.replace(word_macro, dict_macro[word_macro])
+
+            print(f"word_macro {word_macro}")
+
+            if is_line_contain(line, word_macro + '('):  # if is a macro function
+                macro = dict_macro[word_macro].split(')')[0]
+
+                list_val_function = get_values_of_function(line)
+                list_val_function_macro = get_values_of_function(macro)
+
+                start_cut = line.find(word_macro)
+                end_cut = line.find(')')
+                cut_line = line[start_cut:end_cut]
+
+
+                print(f"list_val_function{list_val_function}")
+                print(f"list_val_function_macro{list_val_function_macro}")
+
+
+                line = line.replace(cut_line, dict_macro[word_macro])
+                print(f"----line {line}")
+                print(f"\n\nlist_val_function_macro[0] {list_val_function_macro[0]},list_val_function[1]:{list_val_function[0]} ")
+                print(f"list_val_function_macro[0]{list_val_function_macro[1].split()[0]},list_val_function[1]:{list_val_function[1].split()[0]} ")
+                line = line.replace(list_val_function_macro[0], list_val_function[0])
+                print(f"----line {line}")
+                line = line.replace(list_val_function_macro[1],list_val_function[1].split()[0])
+                print(f"--66666666666--line {line}")
+                len_val=len(list_val_function_macro)
+                for index, val in enumerate(list_val_function_macro):
+                    print(f"index {index}, val  {val}, list_val_function[index]  {list_val_function[index]}")
+                    print(f"befor line : {line}")
+                    line = line.replace(val, list_val_function[index])
+                    print(f"after line : {line}")
+
+
+            else:  # if ia a macro variable
+                line = line.replace(word_macro, dict_macro[word_macro])
 
     return line
+
 
 def find_variable_macro(line: str, dict_macro: dict) -> str:
     """
@@ -38,7 +88,7 @@ def find_variable_macro(line: str, dict_macro: dict) -> str:
     :return: the word macro if find else return None
     """
 
-    list_word = line.replace('(', " ").split()#for
+    list_word = line.replace('(', " ").split()  # for
 
     for word in list_word:
 
@@ -102,9 +152,6 @@ def copy_header_file(header_file: str, dict_macro: dict) -> (list, dict):
                 add_macro_to_dict(line, dict_macro)
 
     return output, dict_macro
-
-
-
 
 
 # def handle_macro_function(line: str, dict_macro: dict) -> str:
