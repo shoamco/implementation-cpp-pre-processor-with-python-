@@ -53,10 +53,8 @@ def handle_macro(line: str, dict_macro: dict) -> str:
                 end_cut = line.find(')')
                 cut_line = line[start_cut:end_cut]
 
-
                 # print(f"list_val_function{list_val_function}")
                 # print(f"list_val_function_macro{list_val_function_macro}")
-
 
                 line = line.replace(cut_line, dict_macro[word_macro])
                 # print(f"----line {line}")
@@ -151,7 +149,6 @@ def copy_header_file(header_file: str, dict_macro: dict) -> (list, dict):
     return output, dict_macro
 
 
-
 def handle_include_header_file(line: str, output_lines: list, dict_macro: dict, is_standard_library: bool) -> (
         list, dict):
     """
@@ -212,6 +209,27 @@ def add_macro_to_dict(line: str, dict_macro: dict) -> dict:
     return dict_macro
 
 
+def read_header_file(header_file: str, copy_lines: list) -> list:
+    """
+    get a header file if not open before(#pragma once/#ifndef):copy all
+    :param header_file: header file that the preprocessor read and copy
+    :param copy_lines: list of line that we copy into it
+    :return: copy_lines
+    """
+
+
+    with open(header_file) as f:
+        lines = f.readlines()
+        for line in lines:
+            if is_line_contain(line, include):
+                copy_lines += read_header_file(line, copy_lines)
+            else:
+                # print(f"line {line}")
+                copy_lines.append(line)
+
+    return copy_lines
+
+
 def read_cpp_file(input_file: str) -> (
         list, dict):  # read cpp file and return a list of all new line after preprocessor
     """
@@ -234,11 +252,10 @@ def read_cpp_file(input_file: str) -> (
                 # print(f"line {line}")
                 output_lines.append(line)
 
-
     return output_lines, dict_macro
 
 
-def preprocessor(input_file,output_pp_file):
+def preprocessor(input_file, output_pp_file):
     """
     the function is a simulator of preprocessor
     is read a cpp file :replace macro define and include:
