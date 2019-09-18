@@ -1,10 +1,5 @@
-#define __FUNCS__H
 
 
-#define KUKU "Amitai"
-#define COOKIE "Ola"
-#define FOO "Margalit"
-#define LULU "Michal"
 int func_of_dummy();
 
 enum E_STYLE
@@ -21,15 +16,14 @@ int 	factorial(int n);
 void 	print_current_time();
 void	decorate(E_STYLE style);
 
-#endif	//__FUNCS__H
 
 void func_of_iostream();
-#define MAX(a, b) (a) > (b) ? (a) : (b)
 
 int factorial(int n)
 {
-    cout << COOKIE << endl;
-    cout << MAX(3, 5) << endl;
+    cout << "Ola" << endl;
+    cout <<  MAX(3, 5) (3) > (5) ? (3) : (5)
+) << endl;
 
 	if (n > 1)
 	{

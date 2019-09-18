@@ -1,8 +1,8 @@
 include_my_file = 'include "'
-hashtag = '#'
+hash_tag = '#'
 include_line = 'include'
 include_standard_library = 'include <'
-ifndef = "#ifndef"
+ifn_def = "#ifndef"
 pragma_once = "#pragma once"
 define_macro = 'define'
 file_folder = "PreprocessorTask/"
@@ -10,11 +10,17 @@ system_folder = "PreprocessorTask/system/"
 
 
 def add_macro_to_dict(line: str, dict_macro: dict) -> dict:
+    """
+    get line with macro and insert it into the dict,Handle both macro variable and macro function
+    :param line:line with macro -#define
+    :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
+    :return: dict_macro
+    """
     if is_line_contain(line, '('):  # if is macro function
         line2 = line.replace("#define", "")
-        name_function = line2.split('(')[0].replace(" ", "")
+        name_function = line2.split('(')[0].replace(" ", "")  # name macro function
         dict_macro[name_function] = line2  # insert macro key=macro variable, value=macro value
-    else:
+    else:  # macro variable
         word_list = line.split()
         variable_macro = word_list[1]
         value_macro = word_list[2] if len(word_list) > 2 else ""
@@ -41,7 +47,7 @@ def find_variable_macro(line: str, dict_macro: dict) -> str:
 
 
 def is_line_contain_ifndef_or_pragma_once(line: str) -> bool:
-    return is_line_contain(line, ifndef) or is_line_contain(line, pragma_once)
+    return is_line_contain(line, ifn_def) or is_line_contain(line, pragma_once)
 
 
 def is_line_contain_define_macro(line: str) -> bool:
@@ -51,7 +57,7 @@ def is_line_contain_define_macro(line: str) -> bool:
        :return: True if contain macro ,else False
        """
     return is_line_contain(line, define_macro)
-    # return is_line_contain(line, define_macro) and not is_line_contain(line, '(')  # macro variable not macro function
+
 
 
 def is_line_contain_my_header_file(line: str) -> bool:
@@ -93,6 +99,7 @@ def get_values_of_function(line: str) -> list:
     :param line:
     :return:
     """
+
     return line.split('(')[-1].split(')')[0].split(',')
 
 
@@ -140,8 +147,6 @@ def read_header_file(header_file: str, copy_lines: list, header_read_list: list)
         lines = f.readlines()
         for line in lines:
             if is_line_contain_ifndef_or_pragma_once(line):
-                print(f"line {line}")
-                print(f"header_read_list {header_read_list}")
 
                 if header_file in header_read_list:
                     return copy_lines, header_read_list
@@ -157,7 +162,7 @@ def read_header_file(header_file: str, copy_lines: list, header_read_list: list)
             else:
                 # print(f"line {line}")
                 copy_lines.append(line)
-    print(f"header_read_list {header_read_list}")
+
     return copy_lines, header_read_list
 
 
@@ -172,10 +177,9 @@ def handle_macro(line: str, dict_macro: dict) -> str:
     if not is_line_contain_define_macro(line):
         word_macro = find_variable_macro(line, dict_macro)
         if word_macro:
-
             if is_line_contain(line, word_macro + '('):  # if is a macro function
-                macro = dict_macro[word_macro].split(')')[0]
 
+                macro = dict_macro[word_macro].split(')')[0]
                 list_val_function = get_values_of_function(line)
                 list_val_function_macro = get_values_of_function(macro)
 
@@ -183,22 +187,10 @@ def handle_macro(line: str, dict_macro: dict) -> str:
                 end_cut = line.find(')')
                 cut_line = line[start_cut:end_cut]
 
-                # print(f"list_val_function{list_val_function}")
-                # print(f"list_val_function_macro{list_val_function_macro}")
-
                 line = line.replace(cut_line, dict_macro[word_macro])
-                # print(f"----line {line}")
-                # print(f"\n\nlist_val_function_macro[0] {list_val_function_macro[0]},list_val_function[1]:{list_val_function[0]} ")
-                # print(f"list_val_function_macro[0]{list_val_function_macro[1].split()[0]},list_val_function[1]:{list_val_function[1].split()[0]} ")
 
-                # len_val=len(list_val_function_macro)
                 for index, val in enumerate(list_val_function_macro):
-                    # print(f"index {index}, val  {val}, list_val_function[index]  {list_val_function[index]}")
-                    # print(f"befor line : {line}")
-                    line = line.replace(val, list_val_function[index])
-                    # print(f"after line : {line}")
-
-
+                    line = line.replace(val.strip(), list_val_function[index].strip())
             else:  # if ia a macro variable
                 line = line.replace(word_macro, dict_macro[word_macro])
 
@@ -214,8 +206,7 @@ def read_output_file(input_file: str) -> list:
 
             if is_line_contain_define_macro(line):
                 add_macro_to_dict(line, dict_macro)
-            elif not is_line_contain(line, hashtag):
-                # print(f"line {line}")
+            elif not is_line_contain(line, hash_tag):
                 line = handle_macro(line, dict_macro)
                 copy_lines.append(line)
 
@@ -270,7 +261,5 @@ def preprocessor(input_file, output_pp_file):
 
     output_lines = read_cpp_file(input_file)  # read cpp file and return list of the new line
     write_to_file(output_pp_file, output_lines)  # write the new line into pp file
-    print(f"list {output_lines}")
     output_lines = read_output_file(output_pp_file)
-    print(f"list {output_lines}")
-    write_to_file(output_pp_file + 'p', output_lines)
+    write_to_file(output_pp_file, output_lines)

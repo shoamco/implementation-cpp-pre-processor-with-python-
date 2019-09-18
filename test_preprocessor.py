@@ -1,4 +1,3 @@
-import preprocessor
 import my_preprocessor
 file_folder = "PreprocessorTask/"
 system_folder = "PreprocessorTask/system/"
@@ -7,26 +6,23 @@ system_folder = "PreprocessorTask/system/"
 def test_factorial_cpp():
     input_file = file_folder + 'factorial.cpp'
     output_pp_file = 'factorial.pp'
-    # preprocessor.preprocessor(input_file, output_pp_file)
     my_preprocessor.preprocessor(input_file, output_pp_file)
 
 
 def test_inter_cpp():
     input_file = file_folder + 'inter.cpp'
     output_pp_file = 'inter.pp'
-    # preprocessor.preprocessor(input_file, output_pp_file)
     my_preprocessor.preprocessor(input_file, output_pp_file)
 
 def test_main_cpp():
     input_file = file_folder + 'main.cpp'
     output_pp_file = 'main.pp'
-    # preprocessor.preprocessor(input_file, output_pp_file)
     my_preprocessor.preprocessor(input_file, output_pp_file)
 
 
 
 
 if __name__ == '__main__':
-    # test_inter_cpp()
+    test_inter_cpp()
     test_factorial_cpp()
-    # test_main_cpp()
+    test_main_cpp()
