@@ -1,4 +1,5 @@
 include_my_file = 'include "'
+hashtag = '#'
 include_line = 'include'
 include_standard_library = 'include <'
 ifndef = "#ifndef"
@@ -6,6 +7,19 @@ pragma_once = "#pragma once"
 define_macro = 'define'
 file_folder = "PreprocessorTask/"
 system_folder = "PreprocessorTask/system/"
+
+
+def add_macro_to_dict(line: str, dict_macro: dict) -> dict:
+    if is_line_contain(line, '('):  # if is macro function
+        line2 = line.replace("#define", "")
+        name_function = line2.split('(')[0].replace(" ", "")
+        dict_macro[name_function] = line2  # insert macro key=macro variable, value=macro value
+    else:
+        word_list = line.split()
+        variable_macro = word_list[1]
+        value_macro = word_list[2] if len(word_list) > 2 else ""
+        dict_macro[variable_macro] = value_macro  # insert macro key=macro variable, value=macro value
+    return dict_macro
 
 
 def find_variable_macro(line: str, dict_macro: dict) -> str:
@@ -89,7 +103,7 @@ def get_name_header_file(line: str, is_standard_library: bool) -> str:
     :param is_standard_library:  if the include is to a standard library =True ,else =False
     :return: return the name of the header file
     """
-    print(f"line: {line}")
+
     return system_folder + line.split('<')[1][:-2] + '.h' if is_standard_library else file_folder + line.split('"')[1]
 
 
@@ -103,33 +117,19 @@ def handel_line_include(line: str, copy_lines: list, header_read_list: list) -> 
     if is_line_contain_my_header_file(line):
 
         header_file_name = get_name_header_file(line, False)  # get name header file
-        print(f"header_file_name {header_file_name}")
+
         temp_copy_line, temp_header_list = read_header_file(header_file_name, copy_lines, header_read_list)
         copy_lines += temp_copy_line
-        header_read_list += temp_header_list
+        header_read_list = temp_header_list
     elif is_line_contain_sl_header_file(line):
         header_file_name = get_name_header_file(line, True)  # get name header file
-        print(f"header_file_name {header_file_name}")
+
         temp_copy_line, temp_header_list = read_header_file(header_file_name, copy_lines, header_read_list)
         copy_lines += temp_copy_line
-        header_read_list += temp_header_list
+        header_read_list = temp_header_list
     return copy_lines, header_read_list
 
 
-# def handle_include_header_file(line: str, output_lines: list, dict_macro: dict, is_standard_library: bool) -> (
-#         list, dict):
-#     """
-#     copy the header file  in the  include (in the line)
-#     :param line: line in file that contain include
-#     :param output_lines: the list of all output line after preprocessor
-#      :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
-#     :param is_standard_library: if the include is to a standard library =True ,else =False
-#     :return: the new list of output line after preprocessor copy the header file,and the list of macro variables
-#     """
-#     header_file = get_name_header_file(line, is_standard_library)  # get name hader file
-#     output_lines, dict_macro = copy_header_file(header_file, dict_macro)
-#     output_lines += output_lines
-#     return output_lines, dict_macro
 def read_header_file(header_file: str, copy_lines: list, header_read_list: list) -> (list, list):
     """
     get a header file if not open before(#pragma once/#ifndef):copy all
@@ -142,27 +142,92 @@ def read_header_file(header_file: str, copy_lines: list, header_read_list: list)
         lines = f.readlines()
         for line in lines:
             if is_line_contain_ifndef_or_pragma_once(line):
+                print(f"line {line}")
+                print(f"header_read_list {header_read_list}")
+
                 if header_file in header_read_list:
-                    break
+                    return copy_lines, header_read_list
                 else:
 
                     header_read_list.append(header_file)
 
             elif is_line_contain(line, include_line):
 
-
                 temp_copy_lines, temp_header_read_list = handel_line_include(line, copy_lines, header_read_list)
                 copy_lines += temp_copy_lines
-                header_read_list += temp_header_read_list
+                header_read_list= temp_header_read_list
 
             else:
                 # print(f"line {line}")
                 copy_lines.append(line)
-
+    print(f"header_read_list {header_read_list}")
     return copy_lines, header_read_list
 
 
-def read_cpp_file(input_file: str) -> list:  # read cpp file and return a list of all new line after preprocessor
+def handle_macro(line: str, dict_macro: dict) -> str:
+    """
+    get line and replace the macro variable\function with the value macro
+    :param line:  line in file that contain define
+    :param dict_macro: dict of all variable macro (key-macro variable,value-macro value)
+    :return:the new line after replace the macro
+    """
+
+    if not is_line_contain_define_macro(line):
+        word_macro = find_variable_macro(line, dict_macro)
+        if word_macro:
+
+
+
+            if is_line_contain(line, word_macro + '('):  # if is a macro function
+                macro = dict_macro[word_macro].split(')')[0]
+
+                list_val_function = get_values_of_function(line)
+                list_val_function_macro = get_values_of_function(macro)
+
+                start_cut = line.find(word_macro)
+                end_cut = line.find(')')
+                cut_line = line[start_cut:end_cut]
+
+                # print(f"list_val_function{list_val_function}")
+                # print(f"list_val_function_macro{list_val_function_macro}")
+
+                line = line.replace(cut_line, dict_macro[word_macro])
+                # print(f"----line {line}")
+                # print(f"\n\nlist_val_function_macro[0] {list_val_function_macro[0]},list_val_function[1]:{list_val_function[0]} ")
+                # print(f"list_val_function_macro[0]{list_val_function_macro[1].split()[0]},list_val_function[1]:{list_val_function[1].split()[0]} ")
+
+                # len_val=len(list_val_function_macro)
+                for index, val in enumerate(list_val_function_macro):
+                    # print(f"index {index}, val  {val}, list_val_function[index]  {list_val_function[index]}")
+                    # print(f"befor line : {line}")
+                    line = line.replace(val, list_val_function[index])
+                    # print(f"after line : {line}")
+
+
+            else:  # if ia a macro variable
+                line = line.replace(word_macro, dict_macro[word_macro])
+
+    return line
+
+
+def read_output_file(input_file: str) -> list:
+    copy_lines = []  # list of all new line after copy
+    dict_macro = dict()
+    with open(input_file) as f:
+        lines = f.readlines()
+        for line in lines:
+
+            if is_line_contain_define_macro(line):
+                add_macro_to_dict(line, dict_macro)
+            elif not is_line_contain(line, hashtag):
+                # print(f"line {line}")
+                line = handle_macro(line, dict_macro)
+                copy_lines.append(line)
+
+    return copy_lines
+
+
+def read_cpp_file(input_file: str) -> list:  #
     """
     get a cpp file and copy all line .if line contain include-open header file
     :param input_file: cpp file that the preprocessor read
@@ -178,7 +243,7 @@ def read_cpp_file(input_file: str) -> list:  # read cpp file and return a list o
             if is_line_contain(line, include_line):
                 temp_copy_lines, temp_header_read_list = handel_line_include(line, copy_lines, header_read_list)
                 copy_lines += temp_copy_lines
-                header_read_list += temp_header_read_list
+                header_read_list = temp_header_read_list
 
 
 
@@ -190,10 +255,10 @@ def read_cpp_file(input_file: str) -> list:  # read cpp file and return a list o
     return copy_lines
 
 
-def write_to_file_step1(output_file: str, list_lines: list) -> None:
+def write_to_file(output_file: str, list_lines: list) -> None:
     """
     writing all the line that we copy from cpp and header file into pp file
-    :param output_file: the file output (FILE.pp)
+    :param output_file:  the output file  (FILE.pp)
     :param list_lines: the list that contain all the lines we want to write into the file
     :return:None
     """
@@ -214,4 +279,7 @@ def preprocessor(input_file, output_pp_file):
     """
 
     output_lines = read_cpp_file(input_file)  # read cpp file and return list of the new line
-    write_to_file_step1(output_pp_file, output_lines)  # write the new line into pp file
+    write_to_file(output_pp_file, output_lines)  # write the new line into pp file
+    output_lines = read_output_file(output_pp_file)
+    print(f"list {output_lines}")
+    write_to_file(output_pp_file, output_lines)
