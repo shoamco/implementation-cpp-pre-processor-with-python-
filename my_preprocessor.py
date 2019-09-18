@@ -118,15 +118,13 @@ def handel_line_include(line: str, copy_lines: list, header_read_list: list) -> 
 
         header_file_name = get_name_header_file(line, False)  # get name header file
 
-        temp_copy_line, temp_header_list = read_header_file(header_file_name, copy_lines, header_read_list)
-        copy_lines += temp_copy_line
-        header_read_list = temp_header_list
+        copy_lines, header_read_list = read_header_file(header_file_name, copy_lines, header_read_list)
+
     elif is_line_contain_sl_header_file(line):
         header_file_name = get_name_header_file(line, True)  # get name header file
 
-        temp_copy_line, temp_header_list = read_header_file(header_file_name, copy_lines, header_read_list)
-        copy_lines += temp_copy_line
-        header_read_list = temp_header_list
+        copy_lines, header_read_list = read_header_file(header_file_name, copy_lines, header_read_list)
+
     return copy_lines, header_read_list
 
 
@@ -153,9 +151,8 @@ def read_header_file(header_file: str, copy_lines: list, header_read_list: list)
 
             elif is_line_contain(line, include_line):
 
-                temp_copy_lines, temp_header_read_list = handel_line_include(line, copy_lines, header_read_list)
-                copy_lines += temp_copy_lines
-                header_read_list= temp_header_read_list
+                copy_lines, temp_copy_lines = handel_line_include(line, copy_lines, header_read_list)
+
 
             else:
                 # print(f"line {line}")
@@ -175,8 +172,6 @@ def handle_macro(line: str, dict_macro: dict) -> str:
     if not is_line_contain_define_macro(line):
         word_macro = find_variable_macro(line, dict_macro)
         if word_macro:
-
-
 
             if is_line_contain(line, word_macro + '('):  # if is a macro function
                 macro = dict_macro[word_macro].split(')')[0]
@@ -241,12 +236,7 @@ def read_cpp_file(input_file: str) -> list:  #
         lines = f.readlines()
         for line in lines:
             if is_line_contain(line, include_line):
-                temp_copy_lines, temp_header_read_list = handel_line_include(line, copy_lines, header_read_list)
-                copy_lines += temp_copy_lines
-                header_read_list = temp_header_read_list
-
-
-
+                copy_lines, header_read_list = handel_line_include(line, copy_lines, header_read_list)
 
             else:
                 # print(f"line {line}")
@@ -280,6 +270,7 @@ def preprocessor(input_file, output_pp_file):
 
     output_lines = read_cpp_file(input_file)  # read cpp file and return list of the new line
     write_to_file(output_pp_file, output_lines)  # write the new line into pp file
+    print(f"list {output_lines}")
     output_lines = read_output_file(output_pp_file)
     print(f"list {output_lines}")
-    write_to_file(output_pp_file, output_lines)
+    write_to_file(output_pp_file + 'p', output_lines)
